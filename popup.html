@@ -3,65 +3,434 @@
 <head>
   <meta charset="UTF-8">
   <title>Coupang Product Crawler</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      width: 300px;
-      padding: 10px;
+    :root {
+      --primary-color: #0074E4;
+      --primary-hover: #0066CC;
+      --secondary-color: #F5F5F5;
+      --border-color: #E0E0E0;
+      --text-color: #333333;
+      --text-secondary: #666666;
+      --success-color: #4CAF50;
+      --error-color: #F44336;
+      --warning-color: #FF9800;
+      --border-radius: 8px;
+      --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      width: 380px;
+      padding: 16px;
+      color: var(--text-color);
+      background-color: #FFFFFF;
+    }
+    
     .container {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 16px;
     }
-    button {
-      background-color: #0074E4;
+    
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .header-icon {
+      color: var(--primary-color);
+      font-size: 28px;
+    }
+    
+    .header h1 {
+      font-size: 20px;
+      font-weight: 700;
+      margin: 0;
+    }
+    
+    .description {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin-bottom: 8px;
+    }
+    
+    .card {
+      background-color: #FFFFFF;
+      border-radius: var(--border-radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+    
+    .action-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background-color: var(--primary-color);
       color: white;
       border: none;
-      padding: 8px 12px;
-      border-radius: 4px;
+      padding: 12px 16px;
+      border-radius: var(--border-radius);
       cursor: pointer;
-      font-weight: bold;
+      font-weight: 500;
+      font-size: 15px;
+      transition: background-color 0.2s, transform 0.1s;
+      width: 100%;
     }
-    button:hover {
-      background-color: #0066CC;
+    
+    .action-button:hover {
+      background-color: var(--primary-hover);
     }
+    
+    .action-button:active {
+      transform: scale(0.98);
+    }
+    
+    .action-button .material-icons {
+      font-size: 20px;
+    }
+    
     #status {
-      margin-top: 10px;
-      padding: 8px;
-      border-radius: 4px;
-    }
-    .success {
-      background-color: #DFF2BF;
-      color: #4F8A10;
-    }
-    .error {
-      background-color: #FFBABA;
-      color: #D8000C;
-    }
-    #productCount {
-      font-weight: bold;
-    }
-    #exportSection {
-      margin-top: 10px;
+      padding: 12px;
+      border-radius: var(--border-radius);
+      font-size: 14px;
       display: none;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .success {
+      background-color: rgba(76, 175, 80, 0.1);
+      color: var(--success-color);
+      display: flex !important;
+    }
+    
+    .error {
+      background-color: rgba(244, 67, 54, 0.1);
+      color: var(--error-color);
+      display: flex !important;
+    }
+    
+    .info {
+      background-color: rgba(0, 116, 228, 0.1);
+      color: var(--primary-color);
+      display: flex !important;
+    }
+    
+    .data-section {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background-color: var(--secondary-color);
+      border-radius: var(--border-radius);
+    }
+    
+    .data-count {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 15px;
+    }
+    
+    #productCount {
+      font-weight: 700;
+      color: var(--primary-color);
+    }
+    
+    #exportSection {
+      display: none;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .button-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    
+    .secondary-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background-color: white;
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
+      padding: 10px 16px;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 14px;
+      transition: background-color 0.2s, transform 0.1s;
+    }
+    
+    .secondary-button:hover {
+      background-color: var(--secondary-color);
+    }
+    
+    .secondary-button:active {
+      transform: scale(0.98);
+    }
+    
+    .secondary-button .material-icons {
+      font-size: 18px;
+    }
+    
+    .danger-button {
+      color: var(--error-color);
+      border-color: rgba(244, 67, 54, 0.3);
+    }
+    
+    .danger-button:hover {
+      background-color: rgba(244, 67, 54, 0.1);
+    }
+    
+    #previewSection {
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 400px;
+    }
+    
+    .preview-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .preview-header h3 {
+      font-size: 16px;
+      font-weight: 500;
+    }
+    
+    .preview-pagination {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .pagination-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: white;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      width: 28px;
+      height: 28px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    
+    .pagination-button:hover {
+      background-color: var(--secondary-color);
+    }
+    
+    .pagination-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    #pageInfo {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+    
+    #previewContent {
+      overflow-y: auto;
+      max-height: 320px;
+      padding-right: 4px;
+    }
+    
+    #previewContent::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    #previewContent::-webkit-scrollbar-track {
+      background: var(--secondary-color);
+      border-radius: 3px;
+    }
+    
+    #previewContent::-webkit-scrollbar-thumb {
+      background-color: #BDBDBD;
+      border-radius: 3px;
+    }
+    
+    .preview-item {
+      display: flex;
+      gap: 12px;
+      padding: 12px;
+      border-radius: var(--border-radius);
+      background-color: white;
+      margin-bottom: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+    
+    .preview-item:last-child {
+      margin-bottom: 0;
+    }
+    
+    .preview-image {
+      width: 80px;
+      height: 80px;
+      border-radius: 4px;
+      overflow: hidden;
+      flex-shrink: 0;
+      background-color: var(--secondary-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .preview-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    
+    .preview-image .material-icons {
+      color: #BDBDBD;
+      font-size: 24px;
+    }
+    
+    .preview-item-details {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    
+    .preview-title {
+      font-weight: 500;
+      font-size: 14px !important;
+      line-height: 1.3;
+      margin: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      box-orient: vertical;
+    }
+    
+    .preview-info {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin: 0;
+    }
+    
+    .preview-info .material-icons {
+      font-size: 16px;
+    }
+    
+    .preview-price {
+      color: var(--primary-color);
+      font-weight: 700;
+    }
+    
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 16px;
+      text-align: center;
+      color: var(--text-secondary);
+    }
+    
+    .empty-state .material-icons {
+      font-size: 48px;
+      margin-bottom: 16px;
+      color: #BDBDBD;
+    }
+    
+    .empty-state p {
+      font-size: 14px;
+      line-height: 1.5;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>Coupang Product Crawler</h2>
-    <p>이 확장 프로그램은 쿠팡 제품 목록 페이지에서 제품 정보를 수집합니다.</p>
+    <div class="header">
+      <span class="material-icons header-icon">shopping_cart</span>
+      <h1>쿠팡 제품 크롤러</h1>
+    </div>
     
-    <button id="crawlButton">제품 정보 수집하기</button>
+    <p class="description">쿠팡 제품 목록 페이지에서 제품 정보(제목, 이미지, URL, 제품 ID, 가격)를 수집하고 관리할 수 있습니다.</p>
+    
+    <button id="crawlButton" class="action-button">
+      <span class="material-icons">search</span>
+      제품 정보 수집하기
+    </button>
     
     <div id="status"></div>
     
     <div id="exportSection">
-      <p>수집된 제품: <span id="productCount">0</span>개</p>
-      <button id="exportCSV">CSV로 내보내기</button>
-      <button id="exportJSON">JSON으로 내보내기</button>
-      <button id="clearData">데이터 지우기</button>
+      <div class="data-section">
+        <div class="data-count">
+          <span class="material-icons">inventory_2</span>
+          <span>수집된 제품: <span id="productCount">0</span>개</span>
+        </div>
+      </div>
+      
+      <div class="button-group">
+        <button id="previewButton" class="secondary-button">
+          <span class="material-icons">visibility</span>
+          미리보기
+        </button>
+        <button id="exportCSV" class="secondary-button">
+          <span class="material-icons">file_download</span>
+          CSV 내보내기
+        </button>
+        <button id="exportJSON" class="secondary-button">
+          <span class="material-icons">code</span>
+          JSON 내보내기
+        </button>
+        <button id="clearData" class="secondary-button danger-button">
+          <span class="material-icons">delete</span>
+          데이터 지우기
+        </button>
+      </div>
+    </div>
+    
+    <div id="previewSection">
+      <div class="preview-header">
+        <h3>제품 미리보기</h3>
+        <div class="preview-pagination">
+          <button class="pagination-button" id="prevPage">
+            <span class="material-icons">chevron_left</span>
+          </button>
+          <span id="pageInfo">1/1</span>
+          <button class="pagination-button" id="nextPage">
+            <span class="material-icons">chevron_right</span>
+          </button>
+        </div>
+      </div>
+      <div id="previewContent"></div>
     </div>
   </div>
   

@@ -16,7 +16,7 @@ function extractProducts() {
   try {
     // Try different selectors for Coupang product listings
     // Main product grid items
-    const productItems = document.querySelectorAll('li.search-product, ul.productList li, .baby-product');
+    const productItems = document.querySelectorAll('li.search-product, ul.productList li, .baby-product, article.product');
     
     if (productItems.length > 0) {
       productItems.forEach(item => {
@@ -32,7 +32,7 @@ function extractProducts() {
           }
           
           // Get product title
-          const titleElement = item.querySelector('.name, .product-name, .title, .baby-product-link');
+          const titleElement = item.querySelector('.name, .product-name, .title, .baby-product-link, .description');
           const title = titleElement ? titleElement.textContent.trim() : '';
           
           // Get product image
@@ -43,12 +43,160 @@ function extractProducts() {
             imageUrl = imageElement.src || imageElement.getAttribute('data-src') || '';
           }
           
+          // Extract product ID (unique identifier for the item)
+          let productId = '';
+          try {
+            // First, check if the item itself has an ID attribute (highest priority for Coupang)
+            if (item.id && item.id.match(/\d+/)) {
+              productId = item.id.match(/\d+/)[0];
+            }
+            // Then check data attributes which are commonly used in Coupang
+            else if (item.dataset && item.dataset.productId) {
+              productId = item.dataset.productId;
+            } 
+            else if (item.getAttribute('data-product-id')) {
+              productId = item.getAttribute('data-product-id');
+            } 
+            else if (item.getAttribute('data-item-id')) {
+              productId = item.getAttribute('data-item-id');
+            }
+            
+            // If still no ID, try to find it in nested elements
+            if (!productId) {
+              // Look for ID in various formats
+              const idElement = item.querySelector('[data-product-id], [data-item-id], [data-itemid], [data-vendor-item-id]');
+              if (idElement) {
+                productId = idElement.getAttribute('data-product-id') || 
+                           idElement.getAttribute('data-item-id') || 
+                           idElement.getAttribute('data-itemid') ||
+                           idElement.getAttribute('data-vendor-item-id');
+              }
+              
+              // Try to find ID in product URL (common in Coupang links)
+              if (!productId && productUrl) {
+                const urlMatch = productUrl.match(/products?\/([0-9]+)/);
+                if (urlMatch && urlMatch[1]) {
+                  productId = urlMatch[1];
+                }
+                
+                // Also check for itemId parameter in URL
+                const itemIdMatch = productUrl.match(/itemId=([0-9]+)/);
+                if (itemIdMatch && itemIdMatch[1]) {
+                  // This is the item ID, not product ID, but can be useful if product ID is not found
+                  if (!productId) {
+                    productId = itemIdMatch[1];
+                  }
+                }
+              }
+              
+              // Try to find ID in any element with a numeric ID attribute
+              if (!productId) {
+                const elementsWithId = item.querySelectorAll('[id]');
+                for (const el of elementsWithId) {
+                  const idMatch = el.id.match(/([0-9]+)/);
+                  if (idMatch && idMatch[1]) {
+                    productId = idMatch[1];
+                    break;
+                  }
+                }
+              }
+            }
+          } catch (e) {
+            console.error('Error extracting product ID:', e);
+          }
+
+          // Extract price
+          let price = '';
+          try {
+            // First try to find the specific price-value element (highest priority for Coupang)
+            const priceValueElement = item.querySelector('strong.price-value');
+            if (priceValueElement) {
+              price = priceValueElement.textContent.trim();
+              // Clean up price (remove currency symbols, commas, etc.)
+              price = price.replace(/[^0-9]/g, '');
+            }
+            
+            // If not found, try other common price selectors
+            if (!price) {
+              const priceElement = item.querySelector('.price-value, .price, .product-price, .price-area .value, .search-product-wrap-price, .price-info .price, .price-info .sale strong, .price-info .sale, .search-product-price-info .price, .search-product-price-info .price-value, .price-area, .price-info');
+              
+              if (priceElement) {
+                price = priceElement.textContent.trim();
+                // Clean up price (remove currency symbols, commas, etc.)
+                price = price.replace(/[^0-9]/g, '');
+              }
+            }
+            
+            // If price is still empty, try a more aggressive approach
+            if (!price) {
+              // Look for elements containing price patterns
+              const allElements = item.querySelectorAll('*');
+              for (const el of allElements) {
+                const text = el.textContent.trim();
+                // Look for text that matches price pattern (e.g., "12,345원", "18,900원", "949,000원", "1,294,720원")
+                if (text.match(/[0-9,]+원/) || text.match(/\d{1,3}(,\d{3})+/) || text.match(/\d+원/)) {
+                  price = text.replace(/[^0-9]/g, '');
+                  break;
+                }
+              }
+            }
+            
+            // If still no price, look for percentage discounts which often appear near prices
+            if (!price) {
+              const discountElements = item.querySelectorAll('.instant-discount-rate, [class*="discount"], [class*="sale"]');
+              for (const el of discountElements) {
+                if (el.textContent.includes('%')) {
+                  // Check nearby siblings for price
+                  let sibling = el.nextElementSibling;
+                  while (sibling && !price) {
+                    const text = sibling.textContent.trim();
+                    if (text.match(/[0-9,]+원/) || text.match(/\d{1,3}(,\d{3})+/) || text.match(/\d+원/)) {
+                      price = text.replace(/[^0-9]/g, '');
+                      break;
+                    }
+                    sibling = sibling.nextElementSibling;
+                  }
+                  
+                  // If not found in next siblings, try previous siblings
+                  if (!price) {
+                    sibling = el.previousElementSibling;
+                    while (sibling && !price) {
+                      const text = sibling.textContent.trim();
+                      if (text.match(/[0-9,]+원/) || text.match(/\d{1,3}(,\d{3})+/) || text.match(/\d+원/)) {
+                        price = text.replace(/[^0-9]/g, '');
+                        break;
+                      }
+                      sibling = sibling.previousElementSibling;
+                    }
+                  }
+                  
+                  // If still not found, look at parent's siblings
+                  if (!price && el.parentElement) {
+                    let parentSibling = el.parentElement.nextElementSibling;
+                    while (parentSibling && !price) {
+                      const text = parentSibling.textContent.trim();
+                      if (text.match(/[0-9,]+원/) || text.match(/\d{1,3}(,\d{3})+/) || text.match(/\d+원/)) {
+                        price = text.replace(/[^0-9]/g, '');
+                        break;
+                      }
+                      parentSibling = parentSibling.nextElementSibling;
+                    }
+                  }
+                }
+              }
+            }
+          } catch (e) {
+            console.error('Error extracting price:', e);
+          }
+
           // Only add if we have at least a title and URL
           if (title && productUrl) {
             products.push({
               title,
               imageUrl,
-              productUrl
+              productUrl,
+              productId,
+              price
             });
           }
         } catch (e) {
