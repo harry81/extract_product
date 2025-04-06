@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Coupang Product Crawler</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      width: 300px;
+      padding: 10px;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    button {
+      background-color: #0074E4;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover {
+      background-color: #0066CC;
+    }
+    #status {
+      margin-top: 10px;
+      padding: 8px;
+      border-radius: 4px;
+    }
+    .success {
+      background-color: #DFF2BF;
+      color: #4F8A10;
+    }
+    .error {
+      background-color: #FFBABA;
+      color: #D8000C;
+    }
+    #productCount {
+      font-weight: bold;
+    }
+    #exportSection {
+      margin-top: 10px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Coupang Product Crawler</h2>
+    <p>이 확장 프로그램은 쿠팡 제품 목록 페이지에서 제품 정보를 수집합니다.</p>
+    
+    <button id="crawlButton">제품 정보 수집하기</button>
+    
+    <div id="status"></div>
+    
+    <div id="exportSection">
+      <p>수집된 제품: <span id="productCount">0</span>개</p>
+      <button id="exportCSV">CSV로 내보내기</button>
+      <button id="exportJSON">JSON으로 내보내기</button>
+      <button id="clearData">데이터 지우기</button>
+    </div>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>
