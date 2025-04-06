@@ -1,4 +1,17 @@
 document.addEventListener('DOMContentLoaded', function() {
+  // Add keyboard shortcut listener
+  document.addEventListener('keydown', function(event) {
+    // Check for Alt+C keyboard shortcut
+    if (event.altKey && event.code === 'KeyC') {
+      // Simulate click on the crawl button
+      document.getElementById('crawlButton').click();
+      // Visual feedback for shortcut usage
+      document.getElementById('crawlButton').classList.add('button-flash');
+      setTimeout(() => {
+        document.getElementById('crawlButton').classList.remove('button-flash');
+      }, 300);
+    }
+  });
   const crawlButton = document.getElementById('crawlButton');
   const exportCSVButton = document.getElementById('exportCSV');
   const exportJSONButton = document.getElementById('exportJSON');

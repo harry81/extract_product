@@ -48,6 +48,27 @@
       gap: 12px;
       padding-bottom: 12px;
       border-bottom: 1px solid var(--border-color);
+      position: relative;
+    }
+    
+    .icon-button {
+      position: absolute;
+      right: 0;
+      top: 0;
+      color: var(--primary-color);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 5px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s;
+    }
+    
+    .icon-button:hover {
+      background-color: rgba(0, 0, 0, 0.05);
     }
     
     .header-icon {
@@ -100,8 +121,28 @@
       transform: scale(0.98);
     }
     
+    @keyframes button-flash {
+      0% { background-color: var(--primary-color); }
+      50% { background-color: var(--success-color); }
+      100% { background-color: var(--primary-color); }
+    }
+    
+    .button-flash {
+      animation: button-flash 0.3s ease;
+    }
+    
     .action-button .material-icons {
       font-size: 20px;
+    }
+    
+    .shortcut-hint {
+      font-size: 11px;
+      opacity: 0.7;
+      background-color: rgba(255, 255, 255, 0.2);
+      padding: 2px 5px;
+      border-radius: 4px;
+      margin-left: 8px;
+      font-weight: normal;
     }
     
     #status {
@@ -378,6 +419,9 @@
     <div class="header">
       <span class="material-icons header-icon">shopping_cart</span>
       <h1>쿠팡 제품 크롤러</h1>
+      <a href="settings.html" id="settings-button" class="icon-button" title="설정">
+        <span class="material-icons">settings</span>
+      </a>
     </div>
     
     <p class="description">쿠팡 제품 목록 페이지에서 제품 정보(제목, 이미지, URL, 제품 ID, 가격)를 수집하고 관리할 수 있습니다.</p>
@@ -385,6 +429,7 @@
     <button id="crawlButton" class="action-button">
       <span class="material-icons">search</span>
       제품 정보 수집하기
+      <span class="shortcut-hint">Alt+C</span>
     </button>
     
     <div id="status"></div>

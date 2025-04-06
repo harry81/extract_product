@@ -3,7 +3,18 @@
   "name": "Coupang Product Crawler",
   "version": "1.0",
   "description": "Chrome extension to crawl product titles, images, and URLs from Coupang product listing pages",
-  "permissions": ["activeTab", "scripting", "storage"],
+  "permissions": ["activeTab", "scripting", "storage", "notifications"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "commands": {
+    "collect-products": {
+      "suggested_key": {
+        "default": "Alt+C"
+      },
+      "description": "제품 정보 수집하기"
+    }
+  },
   "action": {
     "default_popup": "popup.html",
     "default_icon": {

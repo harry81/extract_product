@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>쿠팡 제품 크롤러 설정</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #5c6bc0;
+      --secondary-color: #7986cb;
+      --success-color: #66bb6a;
+      --error-color: #ef5350;
+      --info-color: #42a5f5;
+      --background-color: #f5f5f5;
+      --card-color: #ffffff;
+      --text-color: #333333;
+      --border-radius: 8px;
+      --shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background-color: var(--background-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 20px;
+      width: 500px;
+      max-width: 100%;
+    }
+    
+    .container {
+      background-color: var(--card-color);
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+    }
+    
+    header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 15px;
+    }
+    
+    header .material-icons {
+      font-size: 28px;
+      color: var(--primary-color);
+      margin-right: 10px;
+    }
+    
+    h1 {
+      font-size: 20px;
+      margin: 0;
+      font-weight: 500;
+    }
+    
+    .section {
+      margin-bottom: 25px;
+    }
+    
+    h2 {
+      font-size: 16px;
+      margin-top: 0;
+      margin-bottom: 10px;
+      color: var(--primary-color);
+      display: flex;
+      align-items: center;
+    }
+    
+    h2 .material-icons {
+      font-size: 20px;
+      margin-right: 5px;
+    }
+    
+    p {
+      margin: 10px 0;
+      line-height: 1.5;
+    }
+    
+    .shortcut-info {
+      background-color: #f0f4ff;
+      border-radius: var(--border-radius);
+      padding: 15px;
+      margin: 15px 0;
+      border-left: 4px solid var(--primary-color);
+    }
+    
+    .shortcut-key {
+      background-color: #e8eaf6;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-weight: bold;
+      border: 1px solid #c5cae9;
+    }
+    
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: var(--border-radius);
+      padding: 10px 16px;
+      font-size: 14px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background-color 0.2s;
+      margin-top: 10px;
+    }
+    
+    .button:hover {
+      background-color: var(--secondary-color);
+    }
+    
+    .button .material-icons {
+      font-size: 18px;
+      margin-right: 6px;
+    }
+    
+    .tip {
+      background-color: #e8f5e9;
+      border-radius: var(--border-radius);
+      padding: 15px;
+      margin: 15px 0;
+      border-left: 4px solid var(--success-color);
+    }
+    
+    footer {
+      margin-top: 30px;
+      text-align: center;
+      font-size: 12px;
+      color: #777;
+    }
+    
+    #back-button {
+      margin-top: 20px;
+      background-color: #9e9e9e;
+    }
+    
+    #back-button:hover {
+      background-color: #757575;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <span class="material-icons">settings</span>
+      <h1>쿠팡 제품 크롤러 설정</h1>
+    </header>
+    
+    <div class="section">
+      <h2><span class="material-icons">keyboard</span> 키보드 단축키</h2>
+      <p>이 확장 프로그램은 다음과 같은 키보드 단축키를 제공합니다:</p>
+      
+      <div class="shortcut-info">
+        <p><span class="shortcut-key">Alt+C</span> - 제품 정보 수집하기</p>
+        <p>쿠팡 웹사이트에서 이 단축키를 사용하면 현재 페이지의 제품 정보를 자동으로 수집합니다.</p>
+      </div>
+      
+      <p>Chrome은 사용자가 모든 확장 프로그램의 단축키를 직접 설정할 수 있도록 합니다. 단축키를 변경하려면:</p>
+      <ol>
+        <li>Chrome 브라우저에서 <code>chrome://extensions/shortcuts</code>로 이동하세요.</li>
+        <li>'쿠팡 제품 크롤러' 확장 프로그램을 찾으세요.</li>
+        <li>원하는 단축키로 변경하세요.</li>
+      </ol>
+      
+      <a href="chrome://extensions/shortcuts" class="button" id="shortcut-button">
+        <span class="material-icons">open_in_new</span>
+        단축키 설정 페이지로 이동
+      </a>
+      
+      <!-- This div will be populated with instructions if direct navigation fails -->
+      <div id="shortcut-instructions"></div>
+    </div>
+    
+    <div class="section">
+      <h2><span class="material-icons">lightbulb</span> 팁</h2>
+      <div class="tip">
+        <p>단축키 <span class="shortcut-key">Alt+C</span>는 확장 프로그램 팝업을 열지 않고도 작동합니다. 쿠팡 페이지에서 바로 사용하세요!</p>
+        <p>제품 정보가 성공적으로 수집되면 알림이 표시됩니다.</p>
+      </div>
+    </div>
+    
+    <button id="back-button" class="button">
+      <span class="material-icons">arrow_back</span>
+      돌아가기
+    </button>
+  </div>
+  
+  <footer>
+    쿠팡 제품 크롤러 v1.0
+  </footer>
+  
+  <script src="settings.js"></script>
+</body>
+</html>

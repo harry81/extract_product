@@ -1,13 +1,162 @@
 // This script runs on Coupang pages to collect product data when requested
 
-// Listen for messages from the popup
+// Listen for messages from the popup or background script
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+  console.log('Content script received message:', request);
+  
   if (request.action === "crawlProducts") {
+    console.log('Executing crawlProducts action');
     const products = extractProducts();
     sendResponse({products: products});
+  } else if (request.action === "showCompletionEffect") {
+    console.log('Executing showCompletionEffect with count:', request.productCount);
+    showCollectionCompleteEffect(request.productCount);
+    sendResponse({success: true});
   }
   return true; // Keep the message channel open for async response
 });
+
+// Function to show visual effect when collection is complete
+function showCollectionCompleteEffect(productCount) {
+  console.log('Starting showCollectionCompleteEffect with count:', productCount);
+  // Create and inject the CSS for the animation
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes collection-complete-pulse {
+      0% { opacity: 0; transform: scale(0.8); }
+      50% { opacity: 1; transform: scale(1.1); }
+      100% { opacity: 0; transform: scale(1.5); }
+    }
+
+    .collection-complete-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.6);
+      z-index: 10000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      pointer-events: none;
+      animation: collection-complete-fade 3s forwards;
+    }
+
+    @keyframes collection-complete-fade {
+      0% { opacity: 0; }
+      10% { opacity: 1; }
+      80% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    .collection-complete-container {
+      background-color: white;
+      border-radius: 12px;
+      padding: 30px 50px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: 'Noto Sans KR', sans-serif, system-ui;
+      transform: scale(0.8);
+      animation: collection-complete-pop 0.5s forwards;
+    }
+    
+    @keyframes collection-complete-pop {
+      0% { transform: scale(0.9); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    .collection-complete-icon {
+      width: 100px;
+      height: 100px;
+      background-color: #4CAF50;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .collection-complete-icon::before {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background-color: #4CAF50;
+      border-radius: 50%;
+      animation: collection-complete-pulse 1.5s infinite;
+    }
+
+    .collection-complete-icon::after {
+      content: '';
+      width: 40px;
+      height: 20px;
+      border-left: 6px solid white;
+      border-bottom: 6px solid white;
+      transform: rotate(-45deg) translate(5px, -5px);
+      z-index: 1;
+    }
+
+    .collection-complete-title {
+      font-size: 26px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    .collection-complete-count {
+      font-size: 20px;
+      color: #666;
+      margin-bottom: 16px;
+    }
+  `;
+  document.head.appendChild(style);
+
+  // Create the overlay element
+  const overlay = document.createElement('div');
+  overlay.className = 'collection-complete-overlay';
+
+  // Create the container
+  const container = document.createElement('div');
+  container.className = 'collection-complete-container';
+
+  // Create the icon
+  const icon = document.createElement('div');
+  icon.className = 'collection-complete-icon';
+
+  // Create the title
+  const title = document.createElement('div');
+  title.className = 'collection-complete-title';
+  title.textContent = '수집 완료!';
+
+  // Create the count
+  const count = document.createElement('div');
+  count.className = 'collection-complete-count';
+  count.textContent = `${productCount}개의 제품 정보를 수집했습니다.`;
+
+  // Assemble the elements
+  container.appendChild(icon);
+  container.appendChild(title);
+  container.appendChild(count);
+  overlay.appendChild(container);
+  document.body.appendChild(overlay);
+  console.log('Visual effect overlay added to DOM');
+
+  // Remove the overlay after animation completes
+  setTimeout(() => {
+    if (document.body.contains(overlay)) {
+      document.body.removeChild(overlay);
+    }
+    if (document.head.contains(style)) {
+      document.head.removeChild(style);
+    }
+  }, 3000);
+}
 
 // Function to extract products from the current page
 function extractProducts() {
