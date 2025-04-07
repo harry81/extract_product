@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Coupang Product Crawler</title>
+  <title>제품 추출기</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
@@ -30,10 +30,13 @@
     
     body {
       font-family: 'Noto Sans KR', sans-serif;
-      width: 380px;
-      padding: 16px;
+      min-width: 480px;
+      min-height: 400px;
+      padding: 20px;
       color: var(--text-color);
       background-color: #FFFFFF;
+      resize: both;
+      overflow: auto;
     }
     
     .container {
@@ -418,17 +421,17 @@
   <div class="container">
     <div class="header">
       <span class="material-icons header-icon">shopping_cart</span>
-      <h1>쿠팡 제품 크롤러</h1>
+      <h1>제품 추출기</h1>
       <a href="settings.html" id="settings-button" class="icon-button" title="설정">
         <span class="material-icons">settings</span>
       </a>
     </div>
     
-    <p class="description">쿠팡 제품 목록 페이지에서 제품 정보(제목, 이미지, URL, 제품 ID, 가격)를 수집하고 관리할 수 있습니다.</p>
+    <p class="description">제품 목록 페이지에서 제품 정보(제목, 이미지, URL, 제품 ID, 가격)를 추출하고 관리할 수 있습니다.</p>
     
     <button id="crawlButton" class="action-button">
       <span class="material-icons">search</span>
-      제품 정보 수집하기
+      제품 정보 추출하기
       <span class="shortcut-hint">Alt+C</span>
     </button>
     

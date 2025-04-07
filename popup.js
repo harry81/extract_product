@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', function() {
   document.addEventListener('keydown', function(event) {
     // Check for Alt+C keyboard shortcut
     if (event.altKey && event.code === 'KeyC') {
-      // Simulate click on the crawl button
+      // Simulate click on the extract button
       document.getElementById('crawlButton').click();
       // Visual feedback for shortcut usage
       document.getElementById('crawlButton').classList.add('button-flash');
@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }, 300);
     }
   });
-  const crawlButton = document.getElementById('crawlButton');
+  const extractButton = document.getElementById('crawlButton'); // ID remains the same for compatibility
   const exportCSVButton = document.getElementById('exportCSV');
   const exportJSONButton = document.getElementById('exportJSON');
   const clearDataButton = document.getElementById('clearData');
@@ -34,25 +34,25 @@ document.addEventListener('DOMContentLoaded', function() {
   // Load any existing data and update UI
   updateProductCount();
 
-  // Crawl button click handler
-  crawlButton.addEventListener('click', function() {
+  // Extract button click handler
+  extractButton.addEventListener('click', function() {
     // Get the active tab
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
       const activeTab = tabs[0];
 
-      // Check if the current page is a Coupang page
-      if (!activeTab.url.includes('coupang.com')) {
-        showStatus('쿠팡 웹사이트에서만 사용할 수 있습니다.', 'error');
+      // Check if the current page is a supported product page
+      if (!activeTab.url.includes('coupang.com') && !activeTab.url.includes('product')) {
+        showStatus('제품 목록 페이지에서만 사용할 수 있습니다.', 'error');
         return;
       }
 
       // Show status
-      showStatus('제품 정보를 수집 중입니다...', '');
+      showStatus('제품 정보를 추출 중입니다...', '');
 
-      // Execute content script to crawl the page
+      // Execute content script to extract data from the page
       chrome.scripting.executeScript({
         target: {tabId: activeTab.id},
-        function: crawlProducts
+        function: extractProducts
       }, (results) => {
         if (chrome.runtime.lastError) {
           showStatus('오류가 발생했습니다: ' + chrome.runtime.lastError.message, 'error');
@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const products = results[0].result;
 
         if (products.length === 0) {
-          showStatus('제품을 찾을 수 없습니다. 쿠팡 제품 목록 페이지인지 확인해주세요.', 'error');
+          showStatus('제품을 찾을 수 없습니다. 제품 목록 페이지인지 확인해주세요.', 'error');
           return;
         }
 
@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
           // Save back to storage
           chrome.storage.local.set({products: existingProducts}, function() {
-            showStatus(`${products.length}개의 제품 정보가 수집되었습니다.`, 'success');
+            showStatus(`${products.length}개의 제품 정보가 추출되었습니다.`, 'success');
             updateProductCount();
           });
         });
@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', function() {
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement('a');
       link.setAttribute('href', encodedUri);
-      link.setAttribute('download', 'coupang_products.csv');
+      link.setAttribute('download', 'products.csv');
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // Create download link and trigger download
       const link = document.createElement('a');
       link.setAttribute('href', jsonContent);
-      link.setAttribute('download', 'coupang_products.json');
+      link.setAttribute('download', 'products.json');
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -371,13 +371,13 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // This function will be injected into the page
-function crawlProducts() {
+function extractProducts() {
   // Function to extract products from the page
   function extractProducts() {
     const products = [];
     
     try {
-      // Try different selectors for Coupang product listings
+      // Try different selectors for product listings
       // Main product grid items
       const productItems = document.querySelectorAll('li.search-product, ul.productList li, .baby-product, article.product');
       
@@ -409,11 +409,11 @@ function crawlProducts() {
             // Extract product ID (unique identifier for the item)
             let productId = '';
             try {
-              // First, check if the item itself has an ID attribute (highest priority for Coupang)
+              // First, check if the item itself has an ID attribute (highest priority)
               if (item.id && item.id.match(/\d+/)) {
                 productId = item.id.match(/\d+/)[0];
               }
-              // Then check data attributes which are commonly used in Coupang
+              // Then check data attributes which are commonly used
               else if (item.dataset && item.dataset.productId) {
                 productId = item.dataset.productId;
               } 
@@ -435,7 +435,7 @@ function crawlProducts() {
                              idElement.getAttribute('data-vendor-item-id');
                 }
                 
-                // Try to find ID in product URL (common in Coupang links)
+                // Try to find ID in product URL (common in product links)
                 if (!productId && productUrl) {
                   const urlMatch = productUrl.match(/products?\/([0-9]+)/);
                   if (urlMatch && urlMatch[1]) {
@@ -471,7 +471,7 @@ function crawlProducts() {
             // Extract price
             let price = '';
             try {
-              // First try to find the specific price-value element (highest priority for Coupang)
+              // First try to find the specific price-value element (highest priority)
               const priceValueElement = item.querySelector('strong.price-value');
               if (priceValueElement) {
                 price = priceValueElement.textContent.trim();
@@ -568,7 +568,7 @@ function crawlProducts() {
         });
       }
     } catch (error) {
-      console.error('Error crawling products:', error);
+      console.error('Error extracting products:', error);
     }
     
     return products;

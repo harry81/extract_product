@@ -1,11 +1,11 @@
-// This script runs on Coupang pages to collect product data when requested
+// This script runs on product pages to extract product data when requested
 
 // Listen for messages from the popup or background script
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   console.log('Content script received message:', request);
   
-  if (request.action === "crawlProducts") {
-    console.log('Executing crawlProducts action');
+  if (request.action === "crawlProducts") { // Action name remains the same for compatibility
+    console.log('Executing extractProducts action');
     const products = extractProducts();
     sendResponse({products: products});
   } else if (request.action === "showCompletionEffect") {
@@ -16,7 +16,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   return true; // Keep the message channel open for async response
 });
 
-// Function to show visual effect when collection is complete
+// Function to show visual effect when extraction is complete
 function showCollectionCompleteEffect(productCount) {
   console.log('Starting showCollectionCompleteEffect with count:', productCount);
   // Create and inject the CSS for the animation
@@ -28,7 +28,7 @@ function showCollectionCompleteEffect(productCount) {
       100% { opacity: 0; transform: scale(1.5); }
     }
 
-    .collection-complete-overlay {
+    .extraction-complete-overlay {
       position: fixed;
       top: 0;
       left: 0;
@@ -50,7 +50,7 @@ function showCollectionCompleteEffect(productCount) {
       100% { opacity: 0; }
     }
 
-    .collection-complete-container {
+    .extraction-complete-container {
       background-color: white;
       border-radius: 12px;
       padding: 30px 50px;
@@ -102,14 +102,14 @@ function showCollectionCompleteEffect(productCount) {
       z-index: 1;
     }
 
-    .collection-complete-title {
+    .extraction-complete-title {
       font-size: 26px;
       font-weight: bold;
       margin-bottom: 10px;
       color: #333;
     }
 
-    .collection-complete-count {
+    .extraction-complete-count {
       font-size: 20px;
       color: #666;
       margin-bottom: 16px;
@@ -119,25 +119,25 @@ function showCollectionCompleteEffect(productCount) {
 
   // Create the overlay element
   const overlay = document.createElement('div');
-  overlay.className = 'collection-complete-overlay';
+  overlay.className = 'extraction-complete-overlay';
 
   // Create the container
   const container = document.createElement('div');
-  container.className = 'collection-complete-container';
+  container.className = 'extraction-complete-container';
 
   // Create the icon
   const icon = document.createElement('div');
-  icon.className = 'collection-complete-icon';
+  icon.className = 'extraction-complete-icon';
 
   // Create the title
   const title = document.createElement('div');
-  title.className = 'collection-complete-title';
-  title.textContent = '수집 완료!';
+  title.className = 'extraction-complete-title';
+  title.textContent = '추출 완료!';
 
   // Create the count
   const count = document.createElement('div');
-  count.className = 'collection-complete-count';
-  count.textContent = `${productCount}개의 제품 정보를 수집했습니다.`;
+  count.className = 'extraction-complete-count';
+  count.textContent = `${productCount}개의 제품 정보를 추출했습니다.`;
 
   // Assemble the elements
   container.appendChild(icon);
@@ -163,7 +163,7 @@ function extractProducts() {
   const products = [];
   
   try {
-    // Try different selectors for Coupang product listings
+    // Try different selectors for product listings
     // Main product grid items
     const productItems = document.querySelectorAll('li.search-product, ul.productList li, .baby-product, article.product');
     
@@ -177,7 +177,11 @@ function extractProducts() {
           // Get product URL
           let productUrl = linkElement.href;
           if (!productUrl.startsWith('http')) {
-            productUrl = 'https://www.coupang.com' + productUrl;
+            // Handle relative URLs by prepending the current domain
+            if (productUrl.startsWith('/')) {
+              const currentDomain = window.location.origin;
+              productUrl = currentDomain + productUrl;
+            }
           }
           
           // Get product title
@@ -195,11 +199,11 @@ function extractProducts() {
           // Extract product ID (unique identifier for the item)
           let productId = '';
           try {
-            // First, check if the item itself has an ID attribute (highest priority for Coupang)
+            // First, check if the item itself has an ID attribute (highest priority)
             if (item.id && item.id.match(/\d+/)) {
               productId = item.id.match(/\d+/)[0];
             }
-            // Then check data attributes which are commonly used in Coupang
+            // Then check data attributes which are commonly used
             else if (item.dataset && item.dataset.productId) {
               productId = item.dataset.productId;
             } 
@@ -221,7 +225,7 @@ function extractProducts() {
                            idElement.getAttribute('data-vendor-item-id');
               }
               
-              // Try to find ID in product URL (common in Coupang links)
+              // Try to find ID in product URL (common in product links)
               if (!productId && productUrl) {
                 const urlMatch = productUrl.match(/products?\/([0-9]+)/);
                 if (urlMatch && urlMatch[1]) {
@@ -257,7 +261,7 @@ function extractProducts() {
           // Extract price
           let price = '';
           try {
-            // First try to find the specific price-value element (highest priority for Coupang)
+            // First try to find the specific price-value element (highest priority)
             const priceValueElement = item.querySelector('strong.price-value');
             if (priceValueElement) {
               price = priceValueElement.textContent.trim();
@@ -354,7 +358,7 @@ function extractProducts() {
       });
     }
   } catch (error) {
-    console.error('Error crawling products:', error);
+    console.error('Error extracting products:', error);
   }
   
   return products;

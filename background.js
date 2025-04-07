@@ -1,16 +1,16 @@
 // Listen for keyboard shortcut commands
 chrome.commands.onCommand.addListener((command) => {
-  if (command === 'collect-products') {
-    // Check if we're on a Coupang page
+  if (command === 'collect-products') { // Command name remains the same for compatibility
+    // Check if we're on a product page
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       const activeTab = tabs[0];
       
-      // Only proceed if we're on a Coupang page
-      if (activeTab.url.includes('coupang.com')) {
-        // Execute the product collection script
+      // Only proceed if we're on a supported page
+      if (activeTab.url.includes('coupang.com') || activeTab.url.includes('product')) {
+        // Execute the product extraction script
         chrome.scripting.executeScript({
           target: { tabId: activeTab.id },
-          function: collectProducts
+          function: extractProductsFromPage
         }, (results) => {
           if (chrome.runtime.lastError) {
             showNotification('오류가 발생했습니다: ' + chrome.runtime.lastError.message);
@@ -48,7 +48,7 @@ chrome.commands.onCommand.addListener((command) => {
               
               // Save to storage
               chrome.storage.local.set({ products: uniqueProducts }, () => {
-                showNotification(`${newProducts.length}개의 제품 정보를 수집했습니다.`);
+                showNotification(`${newProducts.length}개의 제품 정보를 추출했습니다.`);
                 
                 // Try to show visual effect using both methods for reliability
                 console.log('Attempting to show visual effect...');
@@ -72,7 +72,7 @@ chrome.commands.onCommand.addListener((command) => {
                         // Create and inject the CSS for the animation
                         const style = document.createElement('style');
                         style.textContent = `
-                          .collection-complete-overlay {
+                          .extraction-complete-overlay {
                             position: fixed;
                             top: 0;
                             left: 0;
@@ -84,15 +84,15 @@ chrome.commands.onCommand.addListener((command) => {
                             justify-content: center;
                             align-items: center;
                             pointer-events: none;
-                            animation: collection-complete-fade 3s forwards;
+                            animation: extraction-complete-fade 3s forwards;
                           }
-                          @keyframes collection-complete-fade {
+                          @keyframes extraction-complete-fade {
                             0% { opacity: 0; }
                             10% { opacity: 1; }
                             80% { opacity: 1; }
                             100% { opacity: 0; }
                           }
-                          .collection-complete-container {
+                          .extraction-complete-container {
                             background-color: white;
                             border-radius: 12px;
                             padding: 30px 50px;
@@ -109,7 +109,7 @@ chrome.commands.onCommand.addListener((command) => {
                             60% { transform: scale(1.05); }
                             100% { transform: scale(1); }
                           }
-                          .collection-complete-icon {
+                          .extraction-complete-icon {
                             width: 100px;
                             height: 100px;
                             background-color: #4CAF50;
@@ -128,13 +128,13 @@ chrome.commands.onCommand.addListener((command) => {
                             border-bottom: 8px solid white;
                             transform: rotate(-45deg) translate(5px, -10px);
                           }
-                          .collection-complete-title {
+                          .extraction-complete-title {
                             font-size: 26px;
                             font-weight: bold;
                             margin-bottom: 10px;
                             color: #333;
                           }
-                          .collection-complete-count {
+                          .extraction-complete-count {
                             font-size: 20px;
                             color: #666;
                           }
@@ -143,20 +143,20 @@ chrome.commands.onCommand.addListener((command) => {
 
                         // Create the overlay element
                         const overlay = document.createElement('div');
-                        overlay.className = 'collection-complete-overlay';
+                        overlay.className = 'extraction-complete-overlay';
 
                         // Create the container
                         const container = document.createElement('div');
-                        container.className = 'collection-complete-container';
+                        container.className = 'extraction-complete-container';
 
                         // Create the icon
                         const icon = document.createElement('div');
-                        icon.className = 'collection-complete-icon';
+                        icon.className = 'extraction-complete-icon';
 
                         // Create the title
                         const title = document.createElement('div');
-                        title.className = 'collection-complete-title';
-                        title.textContent = '수집 완료!';
+                        title.className = 'extraction-complete-title';
+                        title.textContent = '추출 완료!';
 
                         // Create the count
                         const countText = document.createElement('div');
@@ -193,7 +193,7 @@ chrome.commands.onCommand.addListener((command) => {
           }
         });
       } else {
-        showNotification('쿠팡 웹사이트에서만 사용할 수 있습니다.');
+        showNotification('제품 목록 페이지에서만 사용할 수 있습니다.');
       }
     });
   }
@@ -204,23 +204,23 @@ function showNotification(message) {
   chrome.notifications.create({
     type: 'basic',
     iconUrl: 'images/icon128.png',
-    title: '쿠팡 제품 크롤러',
+    title: '제품 추출기',
     message: message
   });
 }
 
-// Function to show visual effect when collection is complete
-function showCollectionCompleteEffect(productCount) {
+// Function to show visual effect when extraction is complete
+function showExtractionCompleteEffect(productCount) {
   // Create and inject the CSS for the animation
   const style = document.createElement('style');
   style.textContent = `
-    @keyframes collection-complete-pulse {
+    @keyframes extraction-complete-pulse {
       0% { opacity: 0; transform: scale(0.8); }
       50% { opacity: 1; transform: scale(1.1); }
       100% { opacity: 0; transform: scale(1.5); }
     }
 
-    .collection-complete-overlay {
+    .extraction-complete-overlay {
       position: fixed;
       top: 0;
       left: 0;
@@ -232,17 +232,17 @@ function showCollectionCompleteEffect(productCount) {
       justify-content: center;
       align-items: center;
       pointer-events: none;
-      animation: collection-complete-fade 2s forwards;
+      animation: extraction-complete-fade 2s forwards;
     }
 
-    @keyframes collection-complete-fade {
+    @keyframes extraction-complete-fade {
       0% { opacity: 0; }
       10% { opacity: 1; }
       80% { opacity: 1; }
       100% { opacity: 0; }
     }
 
-    .collection-complete-container {
+    .extraction-complete-container {
       background-color: white;
       border-radius: 12px;
       padding: 20px 40px;
@@ -254,7 +254,7 @@ function showCollectionCompleteEffect(productCount) {
       font-family: 'Noto Sans KR', sans-serif, system-ui;
     }
 
-    .collection-complete-icon {
+    .extraction-complete-icon {
       width: 80px;
       height: 80px;
       background-color: #4CAF50;
@@ -266,14 +266,14 @@ function showCollectionCompleteEffect(productCount) {
       position: relative;
     }
 
-    .collection-complete-icon::before {
+    .extraction-complete-icon::before {
       content: '';
       position: absolute;
       width: 100%;
       height: 100%;
       background-color: #4CAF50;
       border-radius: 50%;
-      animation: collection-complete-pulse 1.5s infinite;
+      animation: extraction-complete-pulse 1.5s infinite;
     }
 
     .collection-complete-icon::after {
@@ -286,14 +286,14 @@ function showCollectionCompleteEffect(productCount) {
       z-index: 1;
     }
 
-    .collection-complete-title {
+    .extraction-complete-title {
       font-size: 22px;
       font-weight: bold;
       margin-bottom: 8px;
       color: #333;
     }
 
-    .collection-complete-count {
+    .extraction-complete-count {
       font-size: 18px;
       color: #666;
       margin-bottom: 16px;
@@ -303,25 +303,25 @@ function showCollectionCompleteEffect(productCount) {
 
   // Create the overlay element
   const overlay = document.createElement('div');
-  overlay.className = 'collection-complete-overlay';
+  overlay.className = 'extraction-complete-overlay';
 
   // Create the container
   const container = document.createElement('div');
-  container.className = 'collection-complete-container';
+  container.className = 'extraction-complete-container';
 
   // Create the icon
   const icon = document.createElement('div');
-  icon.className = 'collection-complete-icon';
+  icon.className = 'extraction-complete-icon';
 
   // Create the title
   const title = document.createElement('div');
-  title.className = 'collection-complete-title';
-  title.textContent = '수집 완료!';
+  title.className = 'extraction-complete-title';
+  title.textContent = '추출 완료!';
 
   // Create the count
   const count = document.createElement('div');
-  count.className = 'collection-complete-count';
-  count.textContent = `${productCount}개의 제품 정보를 수집했습니다.`;
+  count.className = 'extraction-complete-count';
+  count.textContent = `${productCount}개의 제품 정보를 추출했습니다.`;
 
   // Assemble the elements
   container.appendChild(icon);
@@ -340,13 +340,13 @@ function showCollectionCompleteEffect(productCount) {
 }
 
 // This function will be injected into the page
-function collectProducts() {
+function extractProductsFromPage() {
   // Function to extract products from the page
   function extractProducts() {
     const products = [];
     
     try {
-      // Look for product items in various Coupang listing formats
+      // Look for product items in various listing formats
       const productItems = document.querySelectorAll('li.search-product, ul.productList li, .baby-product');
       
       if (productItems.length > 0) {
@@ -514,7 +514,7 @@ function collectProducts() {
         });
       }
     } catch (error) {
-      console.error('Error crawling products:', error);
+      console.error('Error extracting products:', error);
     }
     
     return products;

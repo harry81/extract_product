@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Coupang Product Crawler",
+  "name": "제품 추출기",
   "version": "1.0",
-  "description": "Chrome extension to crawl product titles, images, and URLs from Coupang product listing pages",
+  "description": "Chrome extension to extract product titles, images, and URLs from product listing pages",
   "permissions": ["activeTab", "scripting", "storage", "notifications"],
   "background": {
     "service_worker": "background.js"
@@ -12,7 +12,7 @@
       "suggested_key": {
         "default": "Alt+C"
       },
-      "description": "제품 정보 수집하기"
+      "description": "제품 정보 추출하기"
     }
   },
   "action": {
@@ -30,7 +30,16 @@
   },
   "content_scripts": [
     {
-      "matches": ["*://*.coupang.com/*"],
+      "matches": [
+        "*://*.coupang.com/*",
+        "*://*.amazon.com/*",
+        "*://*.gmarket.co.kr/*",
+        "*://*.auction.co.kr/*",
+        "*://*.11st.co.kr/*",
+        "*://*.interpark.com/*",
+        "*://*.wemakeprice.com/*",
+        "*://*.tmon.co.kr/*"
+      ],
       "js": ["content.js"]
     }
   ]
