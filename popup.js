@@ -25,10 +25,10 @@ document.addEventListener('DOMContentLoaded', function() {
   const prevPageButton = document.getElementById('prevPage');
   const nextPageButton = document.getElementById('nextPage');
   const pageInfoSpan = document.getElementById('pageInfo');
-  
+
   // Preview pagination variables
   let currentPage = 1;
-  let itemsPerPage = 5;
+  let itemsPerPage = 10;
   let totalPages = 1;
 
   // Load any existing data and update UI
@@ -147,27 +147,27 @@ document.addEventListener('DOMContentLoaded', function() {
   previewButton.addEventListener('click', function() {
     chrome.storage.local.get(['products'], function(result) {
       const products = result.products || [];
-      
+
       if (products.length === 0) {
         showStatus('미리볼 제품 정보가 없습니다.', 'error');
         return;
       }
-      
+
       // Show preview section
       previewSection.style.display = 'flex';
-      
+
       // Calculate total pages
       totalPages = Math.ceil(products.length / itemsPerPage);
       currentPage = 1;
-      
+
       // Update page info
       updatePageInfo();
-      
+
       // Render first page
       renderPreviewPage(products, currentPage);
     });
   });
-  
+
   // Previous page button
   prevPageButton.addEventListener('click', function() {
     if (currentPage > 1) {
@@ -179,7 +179,7 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     }
   });
-  
+
   // Next page button
   nextPageButton.addEventListener('click', function() {
     if (currentPage < totalPages) {
@@ -191,7 +191,7 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     }
   });
-  
+
   // Clear data
   clearDataButton.addEventListener('click', function() {
     chrome.storage.local.remove(['products'], function() {
@@ -206,7 +206,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let icon = 'info';
     if (type === 'success') icon = 'check_circle';
     else if (type === 'error') icon = 'error';
-    
+
     statusDiv.innerHTML = `
       <span class="material-icons">${icon}</span>
       ${message}
@@ -228,12 +228,12 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   }
-  
+
   // Helper function to render preview page
   function renderPreviewPage(products, page) {
     // Clear previous content
     previewContent.innerHTML = '';
-    
+
     // Show empty state if no products
     if (products.length === 0) {
       previewContent.innerHTML = `
@@ -244,23 +244,23 @@ document.addEventListener('DOMContentLoaded', function() {
       `;
       return;
     }
-    
+
     // Calculate start and end indices
     const startIndex = (page - 1) * itemsPerPage;
     const endIndex = Math.min(startIndex + itemsPerPage, products.length);
-    
+
     // Render items for current page
     for (let i = startIndex; i < endIndex; i++) {
       const product = products[i];
-      
+
       // Create preview item element
       const itemElement = document.createElement('div');
       itemElement.className = 'preview-item';
-      
+
       // Create image container
       const imageContainer = document.createElement('div');
       imageContainer.className = 'preview-image';
-      
+
       // Add image if available
       if (product.imageUrl) {
         const imgElement = document.createElement('img');
@@ -276,13 +276,13 @@ document.addEventListener('DOMContentLoaded', function() {
         iconElement.textContent = 'image_not_supported';
         imageContainer.appendChild(iconElement);
       }
-      
+
       itemElement.appendChild(imageContainer);
-      
+
       // Add details
       const detailsElement = document.createElement('div');
       detailsElement.className = 'preview-item-details';
-      
+
       // Product ID with icon (First)
       if (product.productId) {
         const idElement = document.createElement('p');
@@ -293,18 +293,18 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         detailsElement.appendChild(idElement);
       }
-      
+
       // Title (Second)
       const titleElement = document.createElement('p');
       titleElement.className = 'preview-title';
       titleElement.textContent = product.title || '제품명 없음';
       detailsElement.appendChild(titleElement);
-      
+
       // Price with icon (Third)
       if (product.price) {
         const priceElement = document.createElement('p');
         priceElement.className = 'preview-info preview-price';
-        
+
         // Format price with commas
         let formattedPrice = product.price;
         try {
@@ -317,53 +317,53 @@ document.addEventListener('DOMContentLoaded', function() {
           // Keep original if parsing fails
           formattedPrice += '원';
         }
-        
+
         priceElement.innerHTML = `
           <span class="material-icons">payments</span>
           ${formattedPrice}
         `;
         detailsElement.appendChild(priceElement);
       }
-      
+
       // Image URL with icon (Fourth)
       if (product.imageUrl) {
         const imageUrlElement = document.createElement('p');
         imageUrlElement.className = 'preview-info';
-        const displayImageUrl = product.imageUrl.length > 30 ? 
-          product.imageUrl.substring(0, 30) + '...' : 
+        const displayImageUrl = product.imageUrl.length > 30 ?
+          product.imageUrl.substring(0, 30) + '...' :
           product.imageUrl;
-        
+
         imageUrlElement.innerHTML = `
           <span class="material-icons">image</span>
           이미지 URL: ${displayImageUrl}
         `;
         detailsElement.appendChild(imageUrlElement);
       }
-      
+
       // Product URL with icon (Fifth)
       if (product.productUrl) {
         const urlElement = document.createElement('p');
         urlElement.className = 'preview-info';
-        const displayUrl = product.productUrl.length > 30 ? 
-          product.productUrl.substring(0, 30) + '...' : 
+        const displayUrl = product.productUrl.length > 30 ?
+          product.productUrl.substring(0, 30) + '...' :
           product.productUrl;
-        
+
         urlElement.innerHTML = `
           <span class="material-icons">link</span>
           제품 URL: ${displayUrl}
         `;
         detailsElement.appendChild(urlElement);
       }
-      
+
       itemElement.appendChild(detailsElement);
       previewContent.appendChild(itemElement);
     }
   }
-  
+
   // Helper function to update page info
   function updatePageInfo() {
     pageInfoSpan.textContent = `${currentPage}/${totalPages}`;
-    
+
     // Update button states
     prevPageButton.disabled = currentPage <= 1;
     nextPageButton.disabled = currentPage >= totalPages;
@@ -375,29 +375,29 @@ function extractProducts() {
   // Function to extract products from the page
   function extractProducts() {
     const products = [];
-    
+
     try {
       // Try different selectors for product listings
       // Main product grid items
       const productItems = document.querySelectorAll('li.search-product, ul.productList li, .baby-product, article.product');
-      
+
       if (productItems.length > 0) {
         productItems.forEach(item => {
           try {
             // Find product link
             const linkElement = item.querySelector('a');
             if (!linkElement) return;
-            
+
             // Get product URL
             let productUrl = linkElement.href;
             if (!productUrl.startsWith('http')) {
               productUrl = 'https://www.coupang.com' + productUrl;
             }
-            
+
             // Get product title
             const titleElement = item.querySelector('.name, .product-name, .title, .baby-product-link, .description');
             const title = titleElement ? titleElement.textContent.trim() : '';
-            
+
             // Get product image
             const imageElement = item.querySelector('img.search-product-wrap-img, img.product-image, img');
             let imageUrl = '';
@@ -405,7 +405,7 @@ function extractProducts() {
               // Try different image attributes
               imageUrl = imageElement.src || imageElement.getAttribute('data-src') || '';
             }
-            
+
             // Extract product ID (unique identifier for the item)
             let productId = '';
             try {
@@ -416,32 +416,32 @@ function extractProducts() {
               // Then check data attributes which are commonly used
               else if (item.dataset && item.dataset.productId) {
                 productId = item.dataset.productId;
-              } 
+              }
               else if (item.getAttribute('data-product-id')) {
                 productId = item.getAttribute('data-product-id');
-              } 
+              }
               else if (item.getAttribute('data-item-id')) {
                 productId = item.getAttribute('data-item-id');
               }
-              
+
               // If still no ID, try to find it in nested elements
               if (!productId) {
                 // Look for ID in various formats
                 const idElement = item.querySelector('[data-product-id], [data-item-id], [data-itemid], [data-vendor-item-id]');
                 if (idElement) {
-                  productId = idElement.getAttribute('data-product-id') || 
-                             idElement.getAttribute('data-item-id') || 
+                  productId = idElement.getAttribute('data-product-id') ||
+                             idElement.getAttribute('data-item-id') ||
                              idElement.getAttribute('data-itemid') ||
                              idElement.getAttribute('data-vendor-item-id');
                 }
-                
+
                 // Try to find ID in product URL (common in product links)
                 if (!productId && productUrl) {
                   const urlMatch = productUrl.match(/products?\/([0-9]+)/);
                   if (urlMatch && urlMatch[1]) {
                     productId = urlMatch[1];
                   }
-                  
+
                   // Also check for itemId parameter in URL
                   const itemIdMatch = productUrl.match(/itemId=([0-9]+)/);
                   if (itemIdMatch && itemIdMatch[1]) {
@@ -451,7 +451,7 @@ function extractProducts() {
                     }
                   }
                 }
-                
+
                 // Try to find ID in any element with a numeric ID attribute
                 if (!productId) {
                   const elementsWithId = item.querySelectorAll('[id]');
@@ -478,18 +478,18 @@ function extractProducts() {
                 // Clean up price (remove currency symbols, commas, etc.)
                 price = price.replace(/[^0-9]/g, '');
               }
-              
+
               // If not found, try other common price selectors
               if (!price) {
                 const priceElement = item.querySelector('.price-value, .price, .product-price, .price-area .value, .search-product-wrap-price, .price-info .price, .price-info .sale strong, .price-info .sale, .search-product-price-info .price, .search-product-price-info .price-value, .price-area, .price-info');
-                
+
                 if (priceElement) {
                   price = priceElement.textContent.trim();
                   // Clean up price (remove currency symbols, commas, etc.)
                   price = price.replace(/[^0-9]/g, '');
                 }
               }
-              
+
               // If price is still empty, try a more aggressive approach
               if (!price) {
                 // Look for elements containing price patterns
@@ -503,7 +503,7 @@ function extractProducts() {
                   }
                 }
               }
-              
+
               // If still no price, look for percentage discounts which often appear near prices
               if (!price) {
                 const discountElements = item.querySelectorAll('.instant-discount-rate, [class*="discount"], [class*="sale"]');
@@ -519,7 +519,7 @@ function extractProducts() {
                       }
                       sibling = sibling.nextElementSibling;
                     }
-                    
+
                     // If not found in next siblings, try previous siblings
                     if (!price) {
                       sibling = el.previousElementSibling;
@@ -532,7 +532,7 @@ function extractProducts() {
                         sibling = sibling.previousElementSibling;
                       }
                     }
-                    
+
                     // If still not found, look at parent's siblings
                     if (!price && el.parentElement) {
                       let parentSibling = el.parentElement.nextElementSibling;
@@ -570,7 +570,7 @@ function extractProducts() {
     } catch (error) {
       console.error('Error extracting products:', error);
     }
-    
+
     return products;
   }
 

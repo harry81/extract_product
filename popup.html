@@ -21,30 +21,30 @@
       --border-radius: 8px;
       --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
-    
+
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
-    
+
     body {
       font-family: 'Noto Sans KR', sans-serif;
       min-width: 480px;
-      min-height: 400px;
+      min-height: 720px;
       padding: 20px;
       color: var(--text-color);
       background-color: #FFFFFF;
       resize: both;
       overflow: auto;
     }
-    
+
     .container {
       display: flex;
       flex-direction: column;
       gap: 16px;
     }
-    
+
     .header {
       display: flex;
       align-items: center;
@@ -53,7 +53,7 @@
       border-bottom: 1px solid var(--border-color);
       position: relative;
     }
-    
+
     .icon-button {
       position: absolute;
       right: 0;
@@ -69,36 +69,36 @@
       justify-content: center;
       transition: background-color 0.2s;
     }
-    
+
     .icon-button:hover {
       background-color: rgba(0, 0, 0, 0.05);
     }
-    
+
     .header-icon {
       color: var(--primary-color);
       font-size: 28px;
     }
-    
+
     .header h1 {
       font-size: 20px;
       font-weight: 700;
       margin: 0;
     }
-    
+
     .description {
       font-size: 14px;
       color: var(--text-secondary);
       line-height: 1.5;
       margin-bottom: 8px;
     }
-    
+
     .card {
       background-color: #FFFFFF;
       border-radius: var(--border-radius);
       padding: 16px;
       box-shadow: var(--shadow);
     }
-    
+
     .action-button {
       display: flex;
       align-items: center;
@@ -115,29 +115,29 @@
       transition: background-color 0.2s, transform 0.1s;
       width: 100%;
     }
-    
+
     .action-button:hover {
       background-color: var(--primary-hover);
     }
-    
+
     .action-button:active {
       transform: scale(0.98);
     }
-    
+
     @keyframes button-flash {
       0% { background-color: var(--primary-color); }
       50% { background-color: var(--success-color); }
       100% { background-color: var(--primary-color); }
     }
-    
+
     .button-flash {
       animation: button-flash 0.3s ease;
     }
-    
+
     .action-button .material-icons {
       font-size: 20px;
     }
-    
+
     .shortcut-hint {
       font-size: 11px;
       opacity: 0.7;
@@ -147,7 +147,7 @@
       margin-left: 8px;
       font-weight: normal;
     }
-    
+
     #status {
       padding: 12px;
       border-radius: var(--border-radius);
@@ -156,25 +156,25 @@
       align-items: center;
       gap: 8px;
     }
-    
+
     .success {
       background-color: rgba(76, 175, 80, 0.1);
       color: var(--success-color);
       display: flex !important;
     }
-    
+
     .error {
       background-color: rgba(244, 67, 54, 0.1);
       color: var(--error-color);
       display: flex !important;
     }
-    
+
     .info {
       background-color: rgba(0, 116, 228, 0.1);
       color: var(--primary-color);
       display: flex !important;
     }
-    
+
     .data-section {
       display: flex;
       align-items: center;
@@ -183,31 +183,31 @@
       background-color: var(--secondary-color);
       border-radius: var(--border-radius);
     }
-    
+
     .data-count {
       display: flex;
       align-items: center;
       gap: 8px;
       font-size: 15px;
     }
-    
+
     #productCount {
       font-weight: 700;
       color: var(--primary-color);
     }
-    
+
     #exportSection {
       display: none;
       flex-direction: column;
       gap: 16px;
     }
-    
+
     .button-group {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
     }
-    
+
     .secondary-button {
       display: flex;
       align-items: center;
@@ -223,35 +223,35 @@
       font-size: 14px;
       transition: background-color 0.2s, transform 0.1s;
     }
-    
+
     .secondary-button:hover {
       background-color: var(--secondary-color);
     }
-    
+
     .secondary-button:active {
       transform: scale(0.98);
     }
-    
+
     .secondary-button .material-icons {
       font-size: 18px;
     }
-    
+
     .danger-button {
       color: var(--error-color);
       border-color: rgba(244, 67, 54, 0.3);
     }
-    
+
     .danger-button:hover {
       background-color: rgba(244, 67, 54, 0.1);
     }
-    
+
     #previewSection {
       display: none;
       flex-direction: column;
       gap: 12px;
       max-height: 400px;
     }
-    
+
     .preview-header {
       display: flex;
       align-items: center;
@@ -259,18 +259,18 @@
       padding-bottom: 8px;
       border-bottom: 1px solid var(--border-color);
     }
-    
+
     .preview-header h3 {
       font-size: 16px;
       font-weight: 500;
     }
-    
+
     .preview-pagination {
       display: flex;
       align-items: center;
       gap: 8px;
     }
-    
+
     .pagination-button {
       display: flex;
       align-items: center;
@@ -283,41 +283,41 @@
       cursor: pointer;
       transition: background-color 0.2s;
     }
-    
+
     .pagination-button:hover {
       background-color: var(--secondary-color);
     }
-    
+
     .pagination-button:disabled {
       opacity: 0.5;
       cursor: not-allowed;
     }
-    
+
     #pageInfo {
       font-size: 14px;
       color: var(--text-secondary);
     }
-    
+
     #previewContent {
       overflow-y: auto;
       max-height: 320px;
       padding-right: 4px;
     }
-    
+
     #previewContent::-webkit-scrollbar {
       width: 6px;
     }
-    
+
     #previewContent::-webkit-scrollbar-track {
       background: var(--secondary-color);
       border-radius: 3px;
     }
-    
+
     #previewContent::-webkit-scrollbar-thumb {
       background-color: #BDBDBD;
       border-radius: 3px;
     }
-    
+
     .preview-item {
       display: flex;
       gap: 12px;
@@ -327,11 +327,11 @@
       margin-bottom: 8px;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
     }
-    
+
     .preview-item:last-child {
       margin-bottom: 0;
     }
-    
+
     .preview-image {
       width: 80px;
       height: 80px;
@@ -343,18 +343,18 @@
       align-items: center;
       justify-content: center;
     }
-    
+
     .preview-image img {
       width: 100%;
       height: 100%;
       object-fit: contain;
     }
-    
+
     .preview-image .material-icons {
       color: #BDBDBD;
       font-size: 24px;
     }
-    
+
     .preview-item-details {
       flex: 1;
       min-width: 0;
@@ -362,7 +362,7 @@
       flex-direction: column;
       gap: 4px;
     }
-    
+
     .preview-title {
       font-weight: 500;
       font-size: 14px !important;
@@ -376,7 +376,7 @@
       -webkit-box-orient: vertical;
       box-orient: vertical;
     }
-    
+
     .preview-info {
       display: flex;
       align-items: center;
@@ -385,16 +385,16 @@
       color: var(--text-secondary);
       margin: 0;
     }
-    
+
     .preview-info .material-icons {
       font-size: 16px;
     }
-    
+
     .preview-price {
       color: var(--primary-color);
       font-weight: 700;
     }
-    
+
     .empty-state {
       display: flex;
       flex-direction: column;
@@ -404,13 +404,13 @@
       text-align: center;
       color: var(--text-secondary);
     }
-    
+
     .empty-state .material-icons {
       font-size: 48px;
       margin-bottom: 16px;
       color: #BDBDBD;
     }
-    
+
     .empty-state p {
       font-size: 14px;
       line-height: 1.5;
@@ -426,17 +426,17 @@
         <span class="material-icons">settings</span>
       </a>
     </div>
-    
+
     <p class="description">제품 목록 페이지에서 제품 정보(제목, 이미지, URL, 제품 ID, 가격)를 추출하고 관리할 수 있습니다.</p>
-    
+
     <button id="crawlButton" class="action-button">
       <span class="material-icons">search</span>
       제품 정보 추출하기
       <span class="shortcut-hint">Alt+C</span>
     </button>
-    
+
     <div id="status"></div>
-    
+
     <div id="exportSection">
       <div class="data-section">
         <div class="data-count">
@@ -444,7 +444,7 @@
           <span>수집된 제품: <span id="productCount">0</span>개</span>
         </div>
       </div>
-      
+
       <div class="button-group">
         <button id="previewButton" class="secondary-button">
           <span class="material-icons">visibility</span>
@@ -464,7 +464,7 @@
         </button>
       </div>
     </div>
-    
+
     <div id="previewSection">
       <div class="preview-header">
         <h3>제품 미리보기</h3>
@@ -481,7 +481,7 @@
       <div id="previewContent"></div>
     </div>
   </div>
-  
+
   <script src="popup.js"></script>
 </body>
 </html>
