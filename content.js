@@ -346,46 +346,84 @@ function extractProducts() {
           let rating = '';
           let ratingTotalCount = '';
           try {
-            // Look for rating elements
-            const ratingElement = item.querySelector('.rating, .product-rating, .star-rating, .rating-star, [class*="rating"], [class*="stars"]');
-            if (ratingElement) {
-              // Try to get numeric rating value
-              const ratingText = ratingElement.textContent.trim();
-              const ratingMatch = ratingText.match(/([0-9]\.[0-9]|[0-5])/); // Match patterns like 4.5 or just 4
-              if (ratingMatch && ratingMatch[1]) {
-                rating = ratingMatch[1];
-              }
+            console.log('Trying to extract rating and review count');
+            
+            // 1. 먼저 별점 컨테이너를 찾습니다
+            const ratingStarContainer = item.querySelector('.rating-star, .star-rating, .product-rating, [class*="star"]');
+            
+            // 2. 별점 컨테이너 내부에서 실제 평점 요소를 찾습니다
+            if (ratingStarContainer) {
+              console.log('Found rating star container:', ratingStarContainer.outerHTML);
               
-              // If no match in text, try to get from style width (common for star ratings)
-              if (!rating && ratingElement.style && ratingElement.style.width) {
-                const widthMatch = ratingElement.style.width.match(/([0-9]+)%/);
-                if (widthMatch && widthMatch[1]) {
-                  // Convert percentage to rating out of 5
-                  const percentage = parseInt(widthMatch[1]);
-                  rating = (percentage / 20).toFixed(1); // 100% = 5 stars
+              // 2.1 .rating 클래스를 가진 요소 찾기 (쿠팡 스타일)
+              const ratingEmElement = ratingStarContainer.querySelector('.rating, em[class*="rating"]');
+              if (ratingEmElement) {
+                console.log('Found rating element:', ratingEmElement.outerHTML);
+                
+                // 2.1.1 텍스트 내용에서 평점 추출 시도
+                const ratingText = ratingEmElement.textContent.trim();
+                if (ratingText && ratingText.match(/[0-9]/)){ 
+                  const ratingMatch = ratingText.match(/([0-9]\.[0-9]|[0-5])/);
+                  if (ratingMatch && ratingMatch[1]) {
+                    rating = ratingMatch[1];
+                    console.log('Extracted rating from text:', rating);
+                  }
+                }
+                
+                // 2.1.2 스타일 width에서 평점 추출 시도 (쿠팡 스타일)
+                if (!rating && ratingEmElement.style && ratingEmElement.style.width) {
+                  const widthValue = ratingEmElement.style.width;
+                  console.log('Found width style:', widthValue);
+                  const widthMatch = widthValue.match(/([0-9]+)%/);
+                  if (widthMatch && widthMatch[1]) {
+                    // 퍼센트를 5점 만점 평점으로 변환
+                    const percentage = parseInt(widthMatch[1]);
+                    rating = (percentage / 20).toFixed(1); // 100% = 5 stars, 90% = 4.5 stars
+                    console.log('Extracted rating from width:', rating);
+                  }
                 }
               }
               
-              // If still no rating, check for aria-label which often contains the rating
-              if (!rating && ratingElement.getAttribute('aria-label')) {
-                const ariaLabel = ratingElement.getAttribute('aria-label');
-                const ariaMatch = ariaLabel.match(/([0-9]\.[0-9]|[0-5])/);
-                if (ariaMatch && ariaMatch[1]) {
-                  rating = ariaMatch[1];
+              // 2.2 평점을 찾지 못했다면 컨테이너 자체의 텍스트에서 추출 시도
+              if (!rating) {
+                const containerText = ratingStarContainer.textContent.trim();
+                const ratingMatch = containerText.match(/([0-9]\.[0-9]|[0-5])/);
+                if (ratingMatch && ratingMatch[1]) {
+                  rating = ratingMatch[1];
+                  console.log('Extracted rating from container text:', rating);
+                }
+              }
+              
+              // 2.3 리뷰 수 추출 시도
+              const ratingCountElement = ratingStarContainer.querySelector('.rating-total-count, .review-count, [class*="review"], [class*="rating-count"], .count');
+              if (ratingCountElement) {
+                console.log('Found rating count element:', ratingCountElement.outerHTML);
+                const countText = ratingCountElement.textContent.trim();
+                // 괄호 안의 숫자 추출 (예: "(123)", "123 reviews" 등)
+                const countMatch = countText.match(/\(?([0-9,]+)\)?/);
+                if (countMatch && countMatch[1]) {
+                  ratingTotalCount = countMatch[1].replace(/,/g, '');
+                  console.log('Extracted rating count:', ratingTotalCount);
                 }
               }
             }
             
-            // Look for rating count elements
-            const ratingCountElement = item.querySelector('.rating-total-count, .review-count, [class*="review"], [class*="rating-count"], .count');
-            if (ratingCountElement) {
-              const countText = ratingCountElement.textContent.trim();
-              // Extract numbers from the text (e.g., "(123)", "123 reviews", etc.)
-              const countMatch = countText.match(/([0-9,]+)/);
-              if (countMatch && countMatch[1]) {
-                ratingTotalCount = countMatch[1].replace(/,/g, '');
+            // 3. 별도로 리뷰 수를 찾지 못했다면 페이지 전체에서 다시 시도
+            if (!ratingTotalCount) {
+              const ratingCountElement = item.querySelector('.rating-total-count, .review-count, [class*="review"], [class*="rating-count"], .count');
+              if (ratingCountElement) {
+                console.log('Found rating count element outside container:', ratingCountElement.outerHTML);
+                const countText = ratingCountElement.textContent.trim();
+                // 괄호 안의 숫자 추출 (예: "(123)", "123 reviews" 등)
+                const countMatch = countText.match(/\(?([0-9,]+)\)?/);
+                if (countMatch && countMatch[1]) {
+                  ratingTotalCount = countMatch[1].replace(/,/g, '');
+                  console.log('Extracted rating count outside container:', ratingTotalCount);
+                }
               }
             }
+            
+            console.log('Final extracted values - Rating:', rating, 'Count:', ratingTotalCount);
           } catch (e) {
             console.error('Error extracting rating info:', e);
           }
