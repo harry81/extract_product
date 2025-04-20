@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "제품 추출기",
-  "version": "1.0",
+  "version": "1.1",
   "description": "Chrome extension to extract product titles, images, and URLs from product listing pages",
   "permissions": ["activeTab", "scripting", "storage", "notifications"],
   "background": {

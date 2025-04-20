@@ -342,6 +342,54 @@ function extractProducts() {
             console.error('Error extracting price:', e);
           }
 
+          // Extract rating
+          let rating = '';
+          let ratingTotalCount = '';
+          try {
+            // Look for rating elements
+            const ratingElement = item.querySelector('.rating, .product-rating, .star-rating, .rating-star, [class*="rating"], [class*="stars"]');
+            if (ratingElement) {
+              // Try to get numeric rating value
+              const ratingText = ratingElement.textContent.trim();
+              const ratingMatch = ratingText.match(/([0-9]\.[0-9]|[0-5])/); // Match patterns like 4.5 or just 4
+              if (ratingMatch && ratingMatch[1]) {
+                rating = ratingMatch[1];
+              }
+              
+              // If no match in text, try to get from style width (common for star ratings)
+              if (!rating && ratingElement.style && ratingElement.style.width) {
+                const widthMatch = ratingElement.style.width.match(/([0-9]+)%/);
+                if (widthMatch && widthMatch[1]) {
+                  // Convert percentage to rating out of 5
+                  const percentage = parseInt(widthMatch[1]);
+                  rating = (percentage / 20).toFixed(1); // 100% = 5 stars
+                }
+              }
+              
+              // If still no rating, check for aria-label which often contains the rating
+              if (!rating && ratingElement.getAttribute('aria-label')) {
+                const ariaLabel = ratingElement.getAttribute('aria-label');
+                const ariaMatch = ariaLabel.match(/([0-9]\.[0-9]|[0-5])/);
+                if (ariaMatch && ariaMatch[1]) {
+                  rating = ariaMatch[1];
+                }
+              }
+            }
+            
+            // Look for rating count elements
+            const ratingCountElement = item.querySelector('.rating-total-count, .review-count, [class*="review"], [class*="rating-count"], .count');
+            if (ratingCountElement) {
+              const countText = ratingCountElement.textContent.trim();
+              // Extract numbers from the text (e.g., "(123)", "123 reviews", etc.)
+              const countMatch = countText.match(/([0-9,]+)/);
+              if (countMatch && countMatch[1]) {
+                ratingTotalCount = countMatch[1].replace(/,/g, '');
+              }
+            }
+          } catch (e) {
+            console.error('Error extracting rating info:', e);
+          }
+
           // Only add if we have at least a title and URL
           if (title && productUrl) {
             products.push({
@@ -349,7 +397,9 @@ function extractProducts() {
               imageUrl,
               productUrl,
               productId,
-              price
+              price,
+              rating,
+              ratingTotalCount
             });
           }
         } catch (e) {

@@ -85,61 +85,167 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Export to CSV
   exportCSVButton.addEventListener('click', function() {
-    chrome.storage.local.get(['products'], function(result) {
+    chrome.storage.local.get(['products', 'exportCounter', 'lastKeyword'], function(result) {
       const products = result.products || [];
+      let exportCounter = result.exportCounter || 1;
+      const lastKeyword = result.lastKeyword || '';
 
       if (products.length === 0) {
         showStatus('내보낼 제품 정보가 없습니다.', 'error');
         return;
       }
+      
+      // Get keyword from the current URL or use a default
+      chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+        const activeTab = tabs[0];
+        let keyword = lastKeyword;
+        
+        // Try to extract keyword from URL
+        if (activeTab && activeTab.url) {
+          // Extract search keyword from URL
+          const url = new URL(activeTab.url);
+          const searchParams = url.searchParams;
+          
+          // Check different parameter names used by various sites
+          const possibleKeywordParams = ['q', 'query', 'keyword', 'search', 'k', 'searchKeyword'];
+          
+          for (const param of possibleKeywordParams) {
+            if (searchParams.has(param)) {
+              keyword = searchParams.get(param);
+              break;
+            }
+          }
+          
+          // If no keyword found in search params, try to extract from path
+          if (!keyword) {
+            const pathSegments = url.pathname.split('/');
+            for (const segment of pathSegments) {
+              if (segment && segment.length > 1 && !segment.includes('.')) {
+                keyword = segment;
+                break;
+              }
+            }
+          }
+        }
+        
+        // Clean up keyword for filename
+        keyword = keyword ? keyword.replace(/[\\/:*?"<>|]/g, '_').substring(0, 20) : 'default';
+        
+        // Save the keyword for next time
+        chrome.storage.local.set({lastKeyword: keyword});
 
-      // Create CSV content
-      let csvContent = 'data:text/csv;charset=utf-8,';
-      csvContent += '제품 ID,제목,가격,이미지 URL,제품 URL\n';
+        // Create CSV content
+        let csvContent = 'data:text/csv;charset=utf-8,';
+        csvContent += '제품 ID,제목,가격,평점,리뷰 수,이미지 URL,제품 URL\n';
 
-      products.forEach(function(product) {
-        const row = [
-          `"${product.productId || ''}"`,
-          `"${product.title.replace(/"/g, '""')}"`,
-          `"${product.price || ''}"`,
-          `"${product.imageUrl}"`,
-          `"${product.productUrl}"`
-        ].join(',');
-        csvContent += row + '\n';
+        products.forEach(function(product) {
+          const row = [
+            `"${product.productId || ''}"`,
+            `"${product.title.replace(/"/g, '""')}"`,
+            `"${product.price || ''}"`,
+            `"${product.rating || ''}"`,
+            `"${product.ratingTotalCount || ''}"`,
+            `"${product.imageUrl}"`,
+            `"${product.productUrl}"`
+          ].join(',');
+          csvContent += row + '\n';
+        });
+
+        // Create download link and trigger download
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement('a');
+        link.setAttribute('href', encodedUri);
+        
+        // Generate filename with format: 제품추출_{키워드}_{번호}.csv
+        const filename = `제품추출_${keyword}_${exportCounter}.csv`;
+        link.setAttribute('download', filename);
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Increment counter for next export
+        exportCounter++;
+        chrome.storage.local.set({exportCounter: exportCounter});
+        
+        showStatus(`파일이 ${filename}으로 저장되었습니다.`, 'success');
       });
-
-      // Create download link and trigger download
-      const encodedUri = encodeURI(csvContent);
-      const link = document.createElement('a');
-      link.setAttribute('href', encodedUri);
-      link.setAttribute('download', 'products.csv');
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
     });
   });
 
   // Export to JSON
   exportJSONButton.addEventListener('click', function() {
-    chrome.storage.local.get(['products'], function(result) {
+    chrome.storage.local.get(['products', 'exportCounter', 'lastKeyword'], function(result) {
       const products = result.products || [];
+      let exportCounter = result.exportCounter || 1;
+      const lastKeyword = result.lastKeyword || '';
 
       if (products.length === 0) {
         showStatus('내보낼 제품 정보가 없습니다.', 'error');
         return;
       }
+      
+      // Get keyword from the current URL or use the last saved one
+      chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+        const activeTab = tabs[0];
+        let keyword = lastKeyword;
+        
+        // Try to extract keyword from URL
+        if (activeTab && activeTab.url) {
+          // Extract search keyword from URL
+          const url = new URL(activeTab.url);
+          const searchParams = url.searchParams;
+          
+          // Check different parameter names used by various sites
+          const possibleKeywordParams = ['q', 'query', 'keyword', 'search', 'k', 'searchKeyword'];
+          
+          for (const param of possibleKeywordParams) {
+            if (searchParams.has(param)) {
+              keyword = searchParams.get(param);
+              break;
+            }
+          }
+          
+          // If no keyword found in search params, try to extract from path
+          if (!keyword) {
+            const pathSegments = url.pathname.split('/');
+            for (const segment of pathSegments) {
+              if (segment && segment.length > 1 && !segment.includes('.')) {
+                keyword = segment;
+                break;
+              }
+            }
+          }
+        }
+        
+        // Clean up keyword for filename
+        keyword = keyword ? keyword.replace(/[\\/:*?"<>|]/g, '_').substring(0, 20) : 'default';
+        
+        // Save the keyword for next time
+        chrome.storage.local.set({lastKeyword: keyword});
 
-      // Create JSON content
-      const jsonContent = 'data:text/json;charset=utf-8,' +
-                          encodeURIComponent(JSON.stringify(products, null, 2));
+        // Create JSON content
+        const jsonContent = 'data:text/json;charset=utf-8,' +
+                            encodeURIComponent(JSON.stringify(products, null, 2));
 
-      // Create download link and trigger download
-      const link = document.createElement('a');
-      link.setAttribute('href', jsonContent);
-      link.setAttribute('download', 'products.json');
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+        // Create download link and trigger download
+        const link = document.createElement('a');
+        link.setAttribute('href', jsonContent);
+        
+        // Generate filename with format: 제품추출_{키워드}_{번호}.json
+        const filename = `제품추출_${keyword}_${exportCounter}.json`;
+        link.setAttribute('download', filename);
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Increment counter for next export
+        exportCounter++;
+        chrome.storage.local.set({exportCounter: exportCounter});
+        
+        showStatus(`파일이 ${filename}으로 저장되었습니다.`, 'success');
+      });
     });
   });
 
@@ -195,6 +301,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Clear data
   clearDataButton.addEventListener('click', function() {
     chrome.storage.local.remove(['products'], function() {
+      // Keep the exportCounter and lastKeyword for consistent naming
       showStatus('모든 제품 정보가 삭제되었습니다.', 'success');
       updateProductCount();
       previewSection.style.display = 'none';
@@ -323,6 +430,60 @@ document.addEventListener('DOMContentLoaded', function() {
           ${formattedPrice}
         `;
         detailsElement.appendChild(priceElement);
+      }
+      
+      // Rating with icon (Fourth)
+      if (product.rating) {
+        const ratingElement = document.createElement('p');
+        ratingElement.className = 'preview-info preview-rating';
+        
+        // Add stars based on rating
+        let starHtml = '';
+        const ratingNum = parseFloat(product.rating);
+        if (!isNaN(ratingNum)) {
+          // Create star icons based on rating
+          const fullStars = Math.floor(ratingNum);
+          const halfStar = ratingNum % 1 >= 0.5;
+          
+          for (let i = 0; i < 5; i++) {
+            if (i < fullStars) {
+              starHtml += '<span class="material-icons" style="color: #FFB400; font-size: 16px;">star</span>';
+            } else if (i === fullStars && halfStar) {
+              starHtml += '<span class="material-icons" style="color: #FFB400; font-size: 16px;">star_half</span>';
+            } else {
+              starHtml += '<span class="material-icons" style="color: #FFB400; font-size: 16px;">star_outline</span>';
+            }
+          }
+        }
+        
+        ratingElement.innerHTML = `
+          <span class="material-icons" style="color: #FFB400;">grade</span>
+          평점: ${product.rating} ${starHtml}
+        `;
+        detailsElement.appendChild(ratingElement);
+      }
+      
+      // Rating count with icon (Fifth)
+      if (product.ratingTotalCount) {
+        const ratingCountElement = document.createElement('p');
+        ratingCountElement.className = 'preview-info';
+        
+        // Format count with commas
+        let formattedCount = product.ratingTotalCount;
+        try {
+          const countNum = formattedCount.replace(/,/g, '');
+          if (!isNaN(countNum)) {
+            formattedCount = Number(countNum).toLocaleString('ko-KR');
+          }
+        } catch (e) {
+          // Keep original if parsing fails
+        }
+        
+        ratingCountElement.innerHTML = `
+          <span class="material-icons">people</span>
+          리뷰 수: ${formattedCount}
+        `;
+        detailsElement.appendChild(ratingCountElement);
       }
 
       // Image URL with icon (Fourth)
@@ -552,6 +713,54 @@ function extractProducts() {
               console.error('Error extracting price:', e);
             }
 
+            // Extract rating
+            let rating = '';
+            let ratingTotalCount = '';
+            try {
+              // Look for rating elements
+              const ratingElement = item.querySelector('.rating, .product-rating, .star-rating, .rating-star, [class*="rating"], [class*="stars"]');
+              if (ratingElement) {
+                // Try to get numeric rating value
+                const ratingText = ratingElement.textContent.trim();
+                const ratingMatch = ratingText.match(/([0-9]\.[0-9]|[0-5])/); // Match patterns like 4.5 or just 4
+                if (ratingMatch && ratingMatch[1]) {
+                  rating = ratingMatch[1];
+                }
+                
+                // If no match in text, try to get from style width (common for star ratings)
+                if (!rating && ratingElement.style && ratingElement.style.width) {
+                  const widthMatch = ratingElement.style.width.match(/([0-9]+)%/);
+                  if (widthMatch && widthMatch[1]) {
+                    // Convert percentage to rating out of 5
+                    const percentage = parseInt(widthMatch[1]);
+                    rating = (percentage / 20).toFixed(1); // 100% = 5 stars
+                  }
+                }
+                
+                // If still no rating, check for aria-label which often contains the rating
+                if (!rating && ratingElement.getAttribute('aria-label')) {
+                  const ariaLabel = ratingElement.getAttribute('aria-label');
+                  const ariaMatch = ariaLabel.match(/([0-9]\.[0-9]|[0-5])/);
+                  if (ariaMatch && ariaMatch[1]) {
+                    rating = ariaMatch[1];
+                  }
+                }
+              }
+              
+              // Look for rating count elements
+              const ratingCountElement = item.querySelector('.rating-total-count, .review-count, [class*="review"], [class*="rating-count"], .count');
+              if (ratingCountElement) {
+                const countText = ratingCountElement.textContent.trim();
+                // Extract numbers from the text (e.g., "(123)", "123 reviews", etc.)
+                const countMatch = countText.match(/([0-9,]+)/);
+                if (countMatch && countMatch[1]) {
+                  ratingTotalCount = countMatch[1].replace(/,/g, '');
+                }
+              }
+            } catch (e) {
+              console.error('Error extracting rating info:', e);
+            }
+
             // Only add if we have at least a title and URL
             if (title && productUrl) {
               products.push({
@@ -559,7 +768,9 @@ function extractProducts() {
                 imageUrl,
                 productUrl,
                 productId,
-                price
+                price,
+                rating,
+                ratingTotalCount
               });
             }
           } catch (e) {
